@@ -1,0 +1,9 @@
+Desde el BASH
+
+1. git add . (TODOS)
+2. git commit (encapsula modificaciones en un label y actualiza repo local)
+3. git push (Actualiza repo en la nube)
+
+PARA ACTUALIZAR DESDE NUBE A LOCAL
+1. git pull (Actualizar repo local con la nube)
+
