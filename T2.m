@@ -103,6 +103,7 @@ plot(gt(1,:),gt(2,:),'.b')
 plot(X(1,:),X(2,:),'.r')
 Ex = sqrt((X(1,:) - gt(1,:)).^2 + (X(2,:) - gt(2,:)).^2);
 mean(Ex)
+
 figure
 plot(Ex(2:4))
 hold on

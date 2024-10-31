@@ -46,7 +46,11 @@ for m = 1 : n_ran
     X(:,random) = X(:,random).*zeros(3,1);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ti = 0;
+tf = length(X);
+t = linspace(ti,tf,length(X));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Covariance associated with the noise
 Qk = [1 0 0;0 1 0;0 0 1]*0.08;
@@ -72,7 +76,7 @@ for i = 1: length(X)
     %Predicted estimate covariance
     Pk = Fk*Pk*Fk'+Qk;
 %%%%%%%%%%%%%%%%%%%%%%%%% UPDATE %%%%%%%%%%%%%%%%%%%%%%%%%
-    %Keep value estimated from X,Y,Theta
+    %Keep value estimatporqed from X,Y,Theta
     Zest = Xk(:, i + 1);
     %Keep observable X,Y,Theta
     Zk = X(:,i);
@@ -87,7 +91,7 @@ for i = 1: length(X)
     %Updated estimated covariance
     Pk = (Id - Kk*Hk)*Pk;
 
-    %
+
     sigmax(i)=sqrt(Pk(1,1));
 end
 
@@ -101,13 +105,44 @@ Err = sqrt((Xk(1,:)-gt(1,:)).^2 + (Xk(2,:)-gt(2,:)).^2);
 %Mean of the summation of squared errors
 mean(Err)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Signal Graph %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 hold on
 %State estimate
 plot(Xk(1,:),Xk(2,:),'r','LineWidth',1.5)
 %Measurement
-plot(X(1,:),X(2,:),'--g')
+plot(X(1,:),X(2,:),'--g','LineWidth',1.5)
 %Ground truth
-plot(gt(1,:),gt(2,:),'-.b')
+plot(gt(1,:),gt(2,:),'-.b','LineWidth',1.5)
+legend('KF','Measurement','Ideal','Location','north')
+title('Graph of X-time')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% Graph of X's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
+figure
+subplot(2,1,1)
+hold on
+%State estimate
+plot(linspace(ti,tf,length(Xk)),Xk(1,:),'r','LineWidth',1.5)
+%Measurement
+plot(linspace(ti,tf,length(Xk)-1),X(1,:),'--g','LineWidth',1.5)
+%Ground truth
+plot(linspace(ti,tf,length(Xk)),gt(1,:),'-.b','LineWidth',1.5)
+legend('X estimate','X measurement','X ideal','Location','north')
+title('Graph of X-time')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% Graph of Y's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
+subplot(2,1,2)
+hold on
+%State estimate
+plot(linspace(ti,tf,length(Xk)),Xk(2,:),'r','LineWidth',1.5)
+%Measurement
+plot(t,X(2,:),'--g','LineWidth',1.5)
+%Ground truth
+plot(linspace(ti,tf,length(Xk)),gt(2,:),'-.b','LineWidth',1.5)
+legend('X estimate','X measurement','X ideal','Location','southwest')
+title('Graph of Y-time')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 figure
 %Error graph in X since row 2 to row 4
 plot(Ex)
