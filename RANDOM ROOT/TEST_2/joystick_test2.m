@@ -8,19 +8,22 @@ grid
 data = readmatrix('joystick_test2_newDef.csv');
 
 % Extract measured data from X,Y,Theta
-ber_mea_x = data(:, 32);
-ber_mea_y = -data(:, 34);
-ber_mea_theta = data(:,25);
+ber_mea_x = data(:, 32);                    % Using X as X (AF ins Excel)
+ber_mea_y = -data(:, 34);                   % Using Z as Y (AH ins Excel)
+ber_mea_theta = data(:,25);                 % Using θ (Y ins Excel)
+ber_mea_Theta = data(:,11);                 % Using δ as Steering (K ins Excel)
 
 %Extract reference data from X,Y,Theta
 ber_gt_x = data(:, 19);
 ber_gt_y = -data(:, 21);
 ber_gt_theta = data(:,12);
+%%%%%%%%%%%%%%%%%%%%%%%% Mi referencia es el Marconi_computed_path NO ESTE
 
 % Filter non-NaN entries measured data from X,Y,Theta
 ber_mea_x = ber_mea_x(~isnan(ber_mea_x));
 ber_mea_y = ber_mea_y(~isnan(ber_mea_y));
 ber_mea_theta = ber_mea_theta(~isnan(ber_mea_theta));
+ber_mea_Theta = ber_mea_Theta(~isnan(ber_mea_Theta));
 
 % Filter non-NaN entries reference data from X,Y,Theta
 ber_gt_x = ber_gt_x(~isnan(ber_gt_x)); 
@@ -31,7 +34,7 @@ ber_gt_theta = ber_gt_theta(~isnan(ber_gt_theta));
 % Parámetros
 n = length(ber_mea_x); % Número de muestras (no +1 aquí)
 % Generar ruido uniforme en el rango [-0.005, 0.005]
-ruido_uniforme = -0.2 + (0.2 - (-0.2)) * rand(n, 3); % 3 columnas para X, Y, Theta
+ruido_uniforme = -0.9 + (0.9 - (-0.9)) * rand(n, 3); % 3 columnas para X, Y, Theta
 
 %Initial position
 Xk = [ber_gt_x(1); ber_gt_y(1); ber_gt_theta(1)];
@@ -39,14 +42,14 @@ Xk = [ber_gt_x(1); ber_gt_y(1); ber_gt_theta(1)];
 %%Measured poses without noise
 X = [ber_mea_x'; ber_mea_y'; ber_mea_theta'];
 %%Measured poses with noise
-X = [ber_mea_x'; ber_mea_y'; ber_mea_theta'] + ruido_uniforme';
+X = [ber_mea_x'; ber_mea_y'; ber_mea_theta'] %+ ruido_uniforme';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% DATA LOSS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n_ran = randi([1,20]);
-for m = 1 : n_ran
-    random = randi([1,length(X)]);
-    %Measured poses
-    X(:,random) = X(:,random).*zeros(3,1);
-end
+% n_ran = randi([1,20]);
+% for m = 1 : n_ran
+%     random = randi([1,length(X)]);
+%     %Measured poses
+%     X(:,random) = X(:,random).*zeros(3,1);
+% end
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ti = 0;
 tf = length(X);
@@ -60,7 +63,7 @@ t = linspace(ti,tf,length(X));
 % d3 = [1.1180; 1.3776; 1.5504];     % the measurements of distance to the landmark 3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Covariance associated with the noise
-Qk = [1 0 0;0 1 0;0 0 1]*0.15;
+Qk = [1 0 0;0 1 0;0 0 1]*0.18;
 %Initialize the Covariance associated with the system
 Pk = [1 0 0;0 1 0;0 0 1]*10;
 %Variance associated
@@ -74,9 +77,9 @@ Rk = [1 0 0;0 1 0;0 0 1]*28;
 % Rk = [1 0 0;0 1 0;0 0 1]*0.1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Elementary displacement
-Dk=0.001;
+Dk=0.001;                   %%%%% Le falta la parte del throttle
 %Elementary rotation
-Wk=0.01;
+Wk=0.01;                    %%%%%
 
 % hold on
 % axis([0 5 0 5])
@@ -168,8 +171,8 @@ plot(Xk(1,:),Xk(2,:),'r','LineWidth',1.5)
 plot(X(1,:),X(2,:),'--g','LineWidth',1.5)
 %Ground truth
 plot(gt(1,:),gt(2,:),'-.b','LineWidth',1.5)
-legend('KF','Measurement','Ideal','Location','north')
-title('Graph of X-time')
+legend('EKF','Measurement','Ideal','Location','north')
+title('EKF Trayectory')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%% Graph of X's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
 figure
@@ -179,9 +182,11 @@ hold on
 plot(linspace(ti,tf,length(Xk)),Xk(1,:),'r','LineWidth',1.5)
 %Measurement
 plot(linspace(ti,tf,length(Xk)-1),X(1,:),'--g','LineWidth',1.5)
-%Ground truth
+% %Ground truth
 plot(linspace(ti,tf,length(Xk)),gt(1,:),'-.b','LineWidth',1.5)
 legend('X estimate','X measurement','X ideal','Location','north')
+xlabel('Time')
+ylabel('X value')
 title('Graph of X-time')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%% Graph of Y's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
@@ -194,11 +199,14 @@ plot(t,X(2,:),'--g','LineWidth',1.5)
 %Ground truth
 plot(linspace(ti,tf,length(Xk)),gt(2,:),'-.b','LineWidth',1.5)
 legend('X estimate','X measurement','X ideal','Location','southwest')
+xlabel('Time')
+ylabel('Y value')
 title('Graph of Y-time')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%figure
+
+figure
 %Error graph in X since row 2 to row 4
-% plot(Ex)
-% hold on
-% plot(sigmax,'r')
-% plot(-sigmax,'r')
+plot(Ex)
+hold on
+plot(sigmax,'r')
+plot(-sigmax,'r')
