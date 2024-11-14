@@ -31,7 +31,7 @@ load("Marconi_computed_path.mat");
 % Parámetros
 n = length(ber_mea_x); % Número de muestras (no +1 aquí)
 mu = 0;     % Media
-sigma = 0.1; % Desviación estándar (ajustada para que esté en [-1, 1])             %%%%%%%%%%%%% 0.1
+sigma = 0.1; % Desviación estándar (ajustada para que esté en [-1, 1])     %%%%%%%%%%%%% 0.1
 
 % Generar ruido gaussiano
 ruido_gaussiano = mu + sigma * randn(3, n);
@@ -43,7 +43,7 @@ ruido_gaussiano(ruido_gaussiano > 1) = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Initial values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Initial position
-Xk = [x(1); y(1); 0];
+Xk = [ber_mea_x(1); ber_mea_y(1); ber_mea_theta(1)];
 
 %Measured poses without noise
 % X = [ber_mea_x'; ber_mea_y'; ber_mea_theta'];
@@ -73,7 +73,7 @@ t = linspace(ti,tf,length(X));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% DATA LOSS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n_ran = randi([10,100]);
+n_ran = randi([50,100]);
 for m = 1 : n_ran
     random = randi([1,length(X)]);
     %Measured poses
@@ -106,7 +106,7 @@ Dk = ber_mea_throttle;
 % % Limitar los valores generados al rango [min_val, max_val]
 % DELTA(DELTA < min(ber_mea_DELTA)) = min(ber_mea_DELTA);
 % DELTA(DELTA > max(ber_mea_DELTA)) = max(ber_mea_DELTA);
-delta = ber_mea_delta
+delta = ber_mea_delta;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%% Extended Kalman Filter %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,15 +132,13 @@ for i = 1: length(X)
     % IF Rk >> Qk The filter relies more on model predictions and less on measurements.
 
     % Qk > Rk
-    % If my uncertainty in my model at instant K > uncertainty in
-    % my measurement at instant K, my measurement will be trusted more than my model.
-    % model
+    %   If my uncertainty in my model at time K > uncertainty in my
+    %   measurement at time K, my measurement will be trusted more than my
+    %   model.
 
-    % Rk > Qk
-    % If the uncertainty in the measurement at time K > uncertainty 
-    % in the model at time K, my measurement at time K will be trusted more than my model.
-    % the model at instant K, the model will be trusted more than the measurement.
-    % measurement
+    % Qk < Rk
+    %   If my uncertainty in my model at time K < uncertainty in my
+    %   measurement at time K, the model will be trusted more than the measurement.
 
 %%%%%%%%%%%%%%%%%%%%% Update state from X,Y,Theta %%%%%%%%%%%%%%%%%%%%%%%%%
     %Update the next X
@@ -188,9 +186,9 @@ Xk;
 Pk;
 
 %Error in X%
-Ex = sqrt((Xk(1,2:3567) - X(1,:)).^2 + (Xk(2,2:3567) - X(2,:)).^2);
+Ex = sqrt((Xk(1,2:end) - X(1,:)).^2 + (Xk(2,2:end) - X(2,:)).^2);
 %Summation of squared errors
-Err = sqrt((Xk(1,2:3567)-X(1,:)).^2 + (Xk(2,2:3567)-X(2,:)).^2);
+Err = sqrt((Xk(1,2:end)-X(1,:)).^2 + (Xk(2,2:end)-X(2,:)).^2);
 %Mean of the summation of squared errors
 mean(Err)
 
@@ -203,6 +201,7 @@ plot(-sigmax,'r')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Signal Graph %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure
 hold on
+grid
 % %State estimate
 plot(Xk(1,:),Xk(2,:),'r','LineWidth',1.5)
 %Measurement
@@ -211,39 +210,47 @@ plot(X(1,:),X(2,:),'--g','LineWidth',2)
 plot(x, y,'m','LineWidth',1.5);
 % %Ground truth
 % plot(gt(1,:),gt(2,:),'-.b','LineWidth',1.5)
-legend('EKF','Measurement','Ideal','Location','north')
+legend('EKF','Measurement','Ideal','Location','southwest')
+xlabel('X(m)')
+ylabel('Y(m)')
 title('EKF Trayectory')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%% Graph of X's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
 figure
-subplot(2,1,1)
+subplot(2,2,1)
 hold on
 %State estimate
 plot(linspace(ti,tf,length(Xk)),Xk(1,:),'r','LineWidth',1.5)
 %Measurement
 plot(linspace(ti,tf,length(Xk)-1),X(1,:),'--g','LineWidth',1.5)
-legend('X estimate','X measurement','Location','north')
+legend('X estimate','X measurement','Location','southwest')
 xlabel('Time')
-ylabel('X value')
+ylabel('X(m)')
 title('Graph of X-time')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%% Graph of Y's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
-subplot(2,1,2)
+subplot(2,2,3)
 hold on
 %State estimate
 plot(linspace(ti,tf,length(Xk)),Xk(2,:),'r','LineWidth',1.5)
 %Measurement
 plot(t,X(2,:),'--g','LineWidth',1.5)
-legend('X estimate','X measurement','Location','southwest')
+legend('Y estimate','Y measurement','Location','southwest')
 xlabel('Time')
-ylabel('Y value')
+ylabel('Y(m)')
 title('Graph of Y-time')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure
-subplot(2,1,1)
-hold on
+subplot(2,2,2)
 % plot the circuit (pov from the ground station)
 plot(x,'m','LineWidth',1.5);
-subplot(2,1,2)
+legend('Ideal X','Location','southwest')
+xlabel('Time')
+ylabel('X(m)')
+title('Graph of ideal X-time')
+subplot(2,2,4)
 % plot the circuit (pov from the ground station)
 plot(y,'m','LineWidth',1.5);
+legend('Ideal Y','Location','southwest')
+xlabel('Time')
+ylabel('Y(m)')
+title('Graph of ideal Y-time')
