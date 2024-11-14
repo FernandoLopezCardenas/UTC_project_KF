@@ -1,0 +1,25 @@
+# https://roboticsbackend.com/ros-param-yaml-format/
+
+# Distance between the front and the rear wheels 
+L: 0.155 # [m]
+
+# Sampling time 
+Ts: 0.01 # [s]
+
+#====================================================
+# Gains and offsets of the steering car
+#----------------------------------------------------
+# https://www.waveshare.com/wiki/JetRacer_AI_Kit
+steering:
+  gain: 0.65
+  offset: 0.0
+
+throttle:
+  gain: 1
+
+#====================================================
+# Path CSV File
+#----------------------------------------------------
+csv_file_path: "/home/marcone/Desktop/elisa/catkin_ws/src/fernando_package/csv/collectedData.csv"
+
+
