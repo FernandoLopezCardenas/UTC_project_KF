@@ -34,13 +34,13 @@ mu = 0;     % Media
 sigma = 0.1; % Desviación estándar (ajustada para que esté en [-1, 1])     %%%%%%%%%%%%% 0.1
 
 % Generar ruido gaussiano
-ruido_gaussiano = mu + sigma * randn(3, n);
+ruido_gaussiano = normrnd(0,sigma,3,n);
 
 % Limitar el ruido gaussiano al rango [-1, 1]
 ruido_gaussiano(ruido_gaussiano < -1) = -1;
 ruido_gaussiano(ruido_gaussiano > 1) = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%puedo añadir ruido random noise con la funcion normrnd(mean,ED,legth(X))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Initial values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Initial position
 Xk = [ber_mea_x(1); ber_mea_y(1); ber_mea_theta(1)];
@@ -121,7 +121,7 @@ for i = 1: length(X)
         %Covariance associated with the noise
         Qk = [1 0 0;0 1 0;0 0 1]*15;
         %Variance associated
-        Rk = [1 0 0;0 1 0;0 0 1]*200;
+        Rk = [1 0 0;0 1 0;0 0 1]*0.1^2;
     end
     % %Covariance associated with the noise
     % Qk = [1 0 0;0 1 0;0 0 1]*1500;
@@ -160,25 +160,25 @@ for i = 1: length(X)
 
     %Predicted estimate covariance
     Pk = Fk*Pk*Fk'+Qk;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %Keep observable X,Y,Theta
-    Zk = X(:,i);
-    %Keep value estimated from X,Y,Theta
-    Zest = Xk(:,i+1);
-    %The estimated measure taking into account the prediction
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %Innovation on measurement pre-fit residual
-    Yk = Zk - Hk*Zest;  % La diferencia completa de las observaciones
-    %Innovation covariance
-    Sk = Hk*Pk*Hk'+Rk;
-    %Optimal Kalman gain
-    Kk = Pk*Hk'*inv(Sk);
-    %Update state estimate
-    Xk(:,i+1) = Xk(:,i+1) + Kk*Yk;
-    %Updated estimated covariance
-    Pk = (Id - Kk*Hk)*Pk;
-
-    %
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %Keep observable X,Y,Theta
+%     Zk = X(:,i);
+%     %Keep value estimated from X,Y,Theta
+%     Zest = Xk(:,i+1);
+%     %The estimated measure taking into account the prediction
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %Innovation on measurement pre-fit residual
+%     Yk = Zk - Hk*Zest;  % La diferencia completa de las observaciones
+%     %Innovation covariance
+%     Sk = Hk*Pk*Hk'+Rk;
+%     %Optimal Kalman gain
+%     Kk = Pk*Hk'*inv(Sk);
+%     %Update state estimate
+%     Xk(:,i+1) = Xk(:,i+1) + Kk*Yk;
+%     %Updated estimated covariance
+%     Pk = (Id - Kk*Hk)*Pk;
+% 
+%     %
     sigmax(i)=sqrt(Pk(1,1));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
