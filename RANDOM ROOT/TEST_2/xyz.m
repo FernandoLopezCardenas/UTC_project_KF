@@ -4,13 +4,13 @@ clc
 
 %%%%%%%%%%%%%%%%%%%%%%% Registration data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Leer todo el archivo CSV
-data = readmatrix('collectedData.csv');
+data = readmatrix('collectedData_new.csv');
 
 %Extract reference data from X,Y,Theta, DELTA, Throttle
 ber_mea_x = data(:, 1);                    % Using X as X (AF in Excel)
 ber_mea_y = data(:, 2);                   % Using Z as Y (AH in Excel)
-ber_mea_theta = -data(:,3);                 % Using θ (Y in Excel)
-ber_mea_throttle = data(:,4);              % Using Throttle (V in Excel)
+ber_mea_theta = data(:,3);                 % Using θ (Y in Excel)
+ber_mea_throttle = data(:,4);              % Using Throttle/velocity (V in Excel)
 ber_mea_delta = data(:,5);                 % Using δ as Steering (K in Excel)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -73,12 +73,12 @@ t = linspace(ti,tf,length(X));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% DATA LOSS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n_ran = randi([50,100]);
-for m = 1 : n_ran
-    random = randi([1,length(X)]);
-    %Measured poses
-    X(:,random) = X(:,random).*zeros(3,1);
-end
+% n_ran = randi([50,100]);
+% for m = 1 : n_ran
+%     random = randi([1,length(X)]);
+%     %Measured poses
+%     X(:,random) = X(:,random).*zeros(3,1);
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%% Initialisation throttle %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -161,22 +161,22 @@ for i = 1: length(X)
     %Predicted estimate covariance
     Pk = Fk*Pk*Fk'+Qk;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     %Keep observable X,Y,Theta
-%     Zk = X(:,i);
-%     %Keep value estimated from X,Y,Theta
-%     Zest = Xk(:,i+1);
-%     %The estimated measure taking into account the prediction
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     %Innovation on measurement pre-fit residual
-%     Yk = Zk - Hk*Zest;  % La diferencia completa de las observaciones
-%     %Innovation covariance
-%     Sk = Hk*Pk*Hk'+Rk;
-%     %Optimal Kalman gain
-%     Kk = Pk*Hk'*inv(Sk);
-%     %Update state estimate
-%     Xk(:,i+1) = Xk(:,i+1) + Kk*Yk;
-%     %Updated estimated covariance
-%     Pk = (Id - Kk*Hk)*Pk;
+    %Keep observable X,Y,Theta
+    Zk = X(:,i);
+    %Keep value estimated from X,Y,Theta
+    Zest = Xk(:,i+1);
+    %The estimated measure taking into account the prediction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Innovation on measurement pre-fit residual
+    Yk = Zk - Hk*Zest;  % La diferencia completa de las observaciones
+    %Innovation covariance
+    Sk = Hk*Pk*Hk'+Rk;
+    %Optimal Kalman gain
+    Kk = Pk*Hk'*inv(Sk);
+    %Update state estimate
+    Xk(:,i+1) = Xk(:,i+1) + Kk*Yk;
+    %Updated estimated covariance
+    Pk = (Id - Kk*Hk)*Pk;
 
     %
     sigmax(i)=sqrt(Pk(1,1));
@@ -207,7 +207,7 @@ plot(Xk(1,:),Xk(2,:),'r','LineWidth',1.5)
 %Measurement
 plot(X(1,:),X(2,:),'--g','LineWidth',2)
 % plot the circuit (pov from the ground station)
-plot(x, y,'m','LineWidth',1.5);
+plot(x, y,'b','LineWidth',1.5);
 % %Ground truth
 % plot(gt(1,:),gt(2,:),'-.b','LineWidth',1.5)
 legend('EKF','Measurement','Ideal','Location','southwest')
@@ -219,27 +219,27 @@ title('EKF Trayectory')
 figure
 subplot(2,2,1)
 hold on
-%State estimate
+% State estimate
 plot(linspace(ti,tf,length(Xk)),Xk(1,:),'r','LineWidth',1.5)
-%Measurement
+% Measurement
 plot(linspace(ti,tf,length(Xk)-1),X(1,:),'--g','LineWidth',1.5)
 legend('X estimate','X measurement','Location','southwest')
 xlabel('Time')
 ylabel('X(m)')
 title('Graph of X-time')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%% Graph of Y's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%% Graph of Y's respect the time %%%%%%%%%%%%%%%%%%%%%%%%
 subplot(2,2,3)
 hold on
-%State estimate
+% State estimate
 plot(linspace(ti,tf,length(Xk)),Xk(2,:),'r','LineWidth',1.5)
-%Measurement
+% Measurement
 plot(t,X(2,:),'--g','LineWidth',1.5)
 legend('Y estimate','Y measurement','Location','southwest')
 xlabel('Time')
 ylabel('Y(m)')
 title('Graph of Y-time')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot(2,2,2)
 % plot the circuit (pov from the ground station)
 plot(x,'m','LineWidth',1.5);

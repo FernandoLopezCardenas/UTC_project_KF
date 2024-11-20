@@ -9,7 +9,7 @@ data = readmatrix('collectedData.csv');
 %Extract reference data from X,Y,Theta, DELTA, Throttle
 ber_mea_x = data(:, 1);                    % Using X as X (AF in Excel)
 ber_mea_y = data(:, 2);                   % Using Z as Y (AH in Excel)
-ber_mea_theta = -data(:,3);                 % Using θ (Y in Excel)
+ber_mea_theta = data(:,3);                 % Using θ (Y in Excel)
 ber_mea_throttle = data(:,4);              % Using Throttle (V in Excel)
 ber_mea_delta = data(:,5);                 % Using δ as Steering (K in Excel)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,7 +43,7 @@ ruido_gaussiano(ruido_gaussiano > 1) = 1;
 %puedo añadir ruido random noise con la funcion normrnd(mean,ED,legth(X))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Initial values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Initial position
-Xk = [x(1); y(1); ber_mea_theta(1)];
+Xk = [X(1); Y(1); ber_mea_theta(1)];
 
 %Measured poses without noise
 X = [ber_mea_x'; ber_mea_y'; ber_mea_theta'];
