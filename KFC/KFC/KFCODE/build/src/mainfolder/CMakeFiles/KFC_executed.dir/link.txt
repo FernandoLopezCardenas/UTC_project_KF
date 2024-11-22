@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/KFC_executed.dir/main.cpp.o -o KFC_executed 
